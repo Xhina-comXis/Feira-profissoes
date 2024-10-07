@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Battle</title>
+    <style>
+        th, td {
+            padding: 15px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+        }
+        p {
+            font-family: Consolas, monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <table>
+        <tr>
+            <td id="hp1"></td>
+            <td id="hp2"></td>
+        </tr>
+        <tr>
+            <td id="pk1"></td>
+            <td id="pk2"></td>
+        </tr>
+        <tr>
+            <td colspan="2" id="comment"></td>
+        </tr>
+        <tr>
+            <td>
+                <input type="button" class="btn" id="m0">
+                <input type="button" class="btn" id="m1">
+                <input type="button" class="btn" id="m2">
+                <input type="button" class="btn" id="m3">
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        const pkmList = [
+            ['Charizard', 'https://img.pokemondb.net/sprites/black-white/normal/charizard.png', 368, [
+                ['Flamethrower', 'fire', 95, 0.95],
+                ['Dragon Claw', 'dragon', 80, 0.95],
+                ['Air Slash', 'fly', 75, 0.85],
+                ['Slash', 'normal', 70, 1]
+            ]],
+            ['Blastoise', 'https://img.pokemondb.net/sprites/black-white/normal/blastoise.png', 362, [
+                ['Surf', 'water', 90, 0.95],
+                ['Crunch', 'normal', 80, 0.95],
+                ['Ice Punch', 'ice', 75, 0.95],
+                ['Flash Cannon', 'steel', 80, 0.95]
+            ]],
+            ['Venusaur', 'https://img.pokemondb.net/sprites/black-white/normal/venusaur-f.png', 364, [
+                ['Petal Blizzard', 'grass', 90, 0.95],
+                ['Sludge Bomb', 'poison', 90, 0.95],
+                ['Earthquake', 'ground', 100, 0.95],
+                ['Body Slam', 'normal', 85, 0.95]
+            ]]
+        ];
+
+        const typeMatch = {
+            'Charizard': [['ground'], ['water', 'rock'], ['fire', 'grass', 'steel']],
+            'Blastoise': [[''], ['grass'], ['fire', 'water']],
+            'Venusaur': [['poison'], ['fire', 'fly', 'ice', 'steel'], ['grass', 'water']]
+        };
+
+        class Pokemon {
+            constructor(name, sprite, hp, moves) {
+                this.name = name;
+                this.sprite = sprite;
+                this.hp = hp;
+                this.fullhp = hp;
+                this.moves = moves;
+            }
+        }
+
+        function spawn(isFirst) {
+            const p = pkmList[Math.floor(Math.random() * pkmList.length)];
+            const pkm = new Pokemon(p[0], p[1], p[2], p[3]);
+
+            if (isFirst) {
+                for (let i = 0; i < 4; i++) {
+                    document.getElementById('m' + i).value = pkm.moves[i][0]; // Set button text to move name
+                }
+            }
+            return pkm;
+        }
+
+        let pk1 = spawn(true);
+        document.getElementById('pk1').innerHTML = `<img src="${pk1.sprite}" alt="${pk1.name}"><p>HP: ${pk1.hp}/${pk1.fullhp}</p>`;
+
+        let pk2 = spawn(false);
+        document.getElementById('pk2').innerHTML = `<img src="${pk2.sprite}" alt="${pk2.name}"><p>HP: ${pk2.hp}/${pk2.fullhp}</p>`;
+
+        // Loop to create buttons and attach event listeners
+        for (let i = 0; i < 4; i++) {
+            let btn = document.getElementById('m' + i);
+            let move = pk1.moves[i];
+
+            btn.addEventListener('click', (function(move) {
+                return function() {
+                    attack(move, pk1, pk2, 'hp2', '');
+                    setTimeout(() => {
+                        const randomMove = pk2.moves[Math.floor(Math.random() * 4)];
+                        attack(randomMove, pk2, pk1, 'hp1', 'Foe ');
+                    }, 2000);
+                };
+            })(move));
+        }
+
+        function attack(move, attacker, receiver, hpId, owner) {
+            document.getElementById('comment').innerHTML = `<p>${owner}${attacker.name} used ${move[0]}!</p>`;
+            if (Math.random() < move[3]) {
+                let power = move[2] + Math.floor(Math.random() * 10);
+                let rtype = typeMatch[receiver.name];
+                let mtype = move[1];
+                let scale = 1;
+
+                for (let i = 0; i < rtype.length; i++) {
+                    if (rtype[i].includes(mtype)) {
+                        switch (i) {
+                            case 0:
+                                scale = 0;
+                                setTimeout(() => {
+                                    document.getElementById('comment').innerHTML = '<p>It had no effect!</p>';
+                                }, 1000);
+                                break;
+                            case 1:
+                                scale = 2;
+                                setTimeout(() => {
+                                    document.getElementById('comment').innerHTML = '<p>It was super effective!</p>';
+                                }, 1000);
+                                break;
+                            case 2:
+                                scale = 0.5;
+                                setTimeout(() => {
+                                    document.getElementById('comment').innerHTML = '<p>It was not very effective...</p>';
+                                }, 1000);
+                                break;
+                        }
+                        break;
+                    }
+                }
+                power *= scale;
+                receiver.hp -= Math.floor(power);
+                document.getElementById(hpId).innerHTML = `<p>HP: ${Math.max(receiver.hp, 0)}/${receiver.fullhp}</p>`;
+            } else {
+                setTimeout(() => {
+                    document.getElementById('comment').innerHTML = `<p>${owner}${attacker.name} missed the target!</p>`;
+                }, 1000);
+            }
+            checkWinner(hpId);
+        }
+
+        function checkWinner(hpId) {
+            if (pk1.hp <= 0 || pk2.hp <= 0) {
+                let winner = pk1.hp <= 0 ? pk2 : pk1;
+                alert('GAME OVER');
+                document.getElementById(hpId).innerHTML = `<p>HP: 0/${winner.fullhp}</p>`;
+                setTimeout(() => {
+                    location.reload(); // Reload the page to restart the game
+                }, 1500);
+            }
+        }
+    </script>
+</body>
+</html>
