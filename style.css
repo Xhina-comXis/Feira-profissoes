@@ -1,0 +1,36 @@
+body{
+    background-color: grey;
+}
+
+.posiimg{
+    position: relative;
+    left: 100px;
+    z-index: 13;
+}
+
+.galom{
+    height: 15vw;
+    width: 15vw;
+    display: block;
+    margin: auto;
+    right: -2.9vw;
+    top: -2vw;
+    position: relative;
+}
+
+.galo{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 30px;
+    color: rgb(0, 5, 0);
+    text-shadow: -1px 1px 0 rgb(255, 255, 255), 1px 1px 0 rgb(255, 255, 255),1px -1px 0 rgb(255, 255, 255),-1px -1px 0 rgb(255, 255, 255);
+    text-align: center;
+    margin-bottom: -1.7vw;
+}
+
+.vida{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 30px;
+    color: rgb(17, 192, 17);
+    text-shadow: -1px 1px 0 rgb(0, 0, 0), 1px 1px 0 rgb(0, 0, 0),1px -1px 0 rgb(0, 0, 0),-1px -1px 0 rgb(0, 0, 0);
+    text-align: center;
+}
